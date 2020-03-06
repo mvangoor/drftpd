@@ -17,13 +17,12 @@
  */
 package org.drftpd.tools.installer;
 
-import org.java.plugin.registry.PluginAttribute;
-import org.java.plugin.registry.PluginDescriptor;
-import org.java.plugin.registry.PluginPrerequisite;
-import org.java.plugin.registry.PluginRegistry;
-
 import java.io.Serializable;
 import java.util.*;
+
+import org.pf4j.PluginDescriptor;
+import org.pf4j.PluginDependency;
+import org.pf4j.PluginManager;
 
 /**
  * @author djb61
@@ -32,6 +31,27 @@ import java.util.*;
  */
 public class PluginTools {
 
+	public static boolean isSlaveDepends(PluginDescriptor plugin1, PluginDescriptor plugin2, PluginDescriptor master, PluginManager manager) {
+		Set<PluginDescriptor> pre1 = new HashSet<PluginDescriptor>();
+		collectPrerequisites(plugin1, pre1, manager);
+		return pre1.contains(plugin2) && ! pre1.contains(master);
+	}
+
+	private static void collectPrerequisites(PluginDescriptor descr, Set<PluginDescriptor> result, PluginManager manager) {
+		for (PluginDependency pre : descr.getDependencies()) {
+			//if (!pre.matches()) {
+			//	continue;
+			//}
+      // Get the plugin we have as a dependency from the manager
+			PluginDescriptor descriptor = manager.getPlugin(pre.getPluginId()).getDescriptor();
+      // If the result set already has this dependency, skip it (ie: only add it if it does not exist)
+			if (result.add(descriptor)) {
+				collectPrerequisites(descriptor, result, manager);
+			}
+		}
+	}
+
+/*
 	public static ArrayList<PluginData> getPluginData(PluginRegistry registry) {
 		Collection<PluginDescriptor> descriptors = registry.getPluginDescriptors();
 		ArrayList<PluginData> plugins = new ArrayList<>();
@@ -41,7 +61,8 @@ public class PluginTools {
 		plugins.sort(new PluginComparator());
 		return plugins;
 	}
-
+*/
+/*
 	public static boolean isDepends(PluginData plugin1, PluginData plugin2, PluginRegistry registry) {
 		// Circular (mutual) dependencies are treated as absence of dependency
 		// at all.
@@ -51,31 +72,15 @@ public class PluginTools {
 		collectPrerequisites(plugin2.getDescriptor(), pre2, registry);
 		return pre1.contains(plugin2.getDescriptor()) && !pre2.contains(plugin1.getDescriptor());
 	}
-
-	public static boolean isSlaveDepends(PluginDescriptor plugin1, PluginDescriptor plugin2, PluginDescriptor master, PluginRegistry registry) {
-		Set<PluginDescriptor> pre1 = new HashSet<>();
-		collectPrerequisites(plugin1, pre1, registry);
-		return pre1.contains(plugin2) && ! pre1.contains(master);
-	}
-
+*/
+/*
 	public static boolean isDependsInclImpl(PluginData plugin1, PluginData plugin2, PluginRegistry registry) {
 		Set<PluginDescriptor> pre1 = new HashSet<>();
 		collectImplPrerequisites(plugin1.getDescriptor(), pre1, registry);
 		return pre1.contains(plugin2.getDescriptor());
 	}
-
-	private static void collectPrerequisites(PluginDescriptor descr, Set<PluginDescriptor> result, PluginRegistry registry) {
-		for (PluginPrerequisite pre : descr.getPrerequisites()) {
-			if (!pre.matches()) {
-				continue;
-			}
-			PluginDescriptor descriptor = registry.getPluginDescriptor(pre.getPluginId());
-			if (result.add(descriptor)) {
-				collectPrerequisites(descriptor, result, registry);
-			}
-		}
-	}
-
+*/
+/*
 	private static void collectImplPrerequisites(PluginDescriptor descr, Set<PluginDescriptor> result, PluginRegistry registry) {
 		for (PluginPrerequisite pre : descr.getPrerequisites()) {
 			if (!pre.matches()) {
@@ -98,7 +103,8 @@ public class PluginTools {
 			}
 		}
 	}
-
+*/
+/*
 	public static void reorder(List<PluginData> plugins, PluginRegistry registry) {
 		for (int i = 0; i < plugins.size(); i++) {
 			for (int j = i + 1; j < plugins.size(); j++) {
@@ -110,7 +116,8 @@ public class PluginTools {
 			}
 		}
 	}
-
+*/
+/*
 	public static ArrayList<String> getMissingPlugins(PluginRegistry pr, InstallerConfig config) {
 		ArrayList<String> plugins = new ArrayList<>();
 		for (String pId : config.getPluginSelections().keySet()) {
@@ -129,7 +136,8 @@ public class PluginTools {
 		}
 		return plugins;
 	}
-
+*/
+/*
 	public static ArrayList<String> getUnconfiguredPlugins(PluginRegistry pr, InstallerConfig config) {
 		ArrayList<String> plugins = new ArrayList<>();
 		for (PluginDescriptor pd : pr.getPluginDescriptors()) {
@@ -140,8 +148,9 @@ public class PluginTools {
 		}
 		return plugins;
 	}
+*/
 }
-
+/*
 @SuppressWarnings("serial")
 class PluginComparator implements Comparator<PluginData>, Serializable {
 
@@ -149,3 +158,4 @@ class PluginComparator implements Comparator<PluginData>, Serializable {
 		return plugin1.getName().compareTo(plugin2.getName());
 	}
 }
+*/

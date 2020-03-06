@@ -32,5 +32,4 @@ public class PluginBuilderThread implements Runnable {
 	public void run() {
 		_builder.buildPlugins();
 	}
-
 }

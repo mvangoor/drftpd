@@ -22,27 +22,34 @@ import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginBuilder;
-import org.drftpd.tools.installer.PluginData;
-import org.drftpd.tools.installer.PluginTools;
-import org.java.plugin.registry.PluginRegistry;
+
+import org.pf4j.PluginManager;
+import org.pf4j.PluginWrapper;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class AutoInstaller {
+
 	private static final Logger logger = LogManager.getLogger(AutoInstaller.class);
 
-	public AutoInstaller(PluginRegistry registry, InstallerConfig config, boolean cleanOnly) {
+	public AutoInstaller(PluginManager manager, InstallerConfig config, boolean cleanOnly) {
 
-		ArrayList<PluginData> toBuild = new ArrayList<>();
+		ArrayList<PluginWrapper> toBuild = new ArrayList<>();
 
-		for (PluginData plugin : PluginTools.getPluginData(registry)) {
-			Boolean sel = config.getPluginSelections().get(plugin.getName());
-			if (sel != null && sel) {
-				toBuild.add(plugin);
+    HashMap<String,Boolean> pluginConfig = config.getPluginSelections();
+		for (PluginWrapper plugin : manager.getPlugins()) {
+      toBuild.add(plugin);
+			Boolean sel = pluginConfig.get(plugin.getDescriptor().getPluginId());
+			if (sel == null) {
+        pluginConfig.put(plugin.getDescriptor().getPluginId(), Boolean.TRUE);
 			}
 		}
+    config.setPluginSelections(pluginConfig);
+    logger.debug("Current plugin configuration: [" + config.getPluginSelections() + "]");
 
 		if (config.getConvertUsers()) {
 			logger.warn("Converting dr2 user files is not supported in autobuild mode.");
@@ -50,8 +57,8 @@ public class AutoInstaller {
 		}
 
 		PipedInputStream logInput = new PipedInputStream();
-		LogWindow logWindow = new LogWindow(logInput,config,toBuild.size(),cleanOnly);
-		PluginBuilder builder = new PluginBuilder(toBuild,registry,logInput,config,logWindow,cleanOnly);
+		LogWindow logWindow = new LogWindow(logInput, config, toBuild.size(), cleanOnly);
+		PluginBuilder builder = new PluginBuilder(toBuild, manager, logInput, config, logWindow, cleanOnly);
 		logWindow.setBuilder(builder);
 		try {
 			logWindow.init();

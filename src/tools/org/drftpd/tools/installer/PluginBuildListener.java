@@ -20,10 +20,16 @@ package org.drftpd.tools.installer;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.FileSet;
-import org.java.plugin.registry.PluginDescriptor;
-import org.java.plugin.registry.PluginRegistry;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
+import org.pf4j.PluginDescriptor;
+import org.pf4j.PluginManager;
+import org.pf4j.PluginWrapper;
 
 import java.io.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeSet;
@@ -34,6 +40,8 @@ import java.util.TreeSet;
  */
 public class PluginBuildListener implements SubBuildListener {
 
+  private static final Logger logger = LogManager.getLogger(PluginBuildListener.class);
+
 	private BufferedWriter _bw;
 	private OutputStreamWriter _osw;
 	private PipedInputStream _input;
@@ -43,8 +51,8 @@ public class PluginBuildListener implements SubBuildListener {
 	private int _logLevel;
 	private long _startTime;
 	private boolean _isSlavePlugin;
-	private HashMap<String,PluginDescriptor> _pluginMap;
-	private HashMap<String,PluginDescriptor> _slavePluginMap;
+	private HashMap<String, PluginDescriptor> _pluginMap;
+	private HashMap<String, PluginDescriptor> _slavePluginMap;
 	private FileSet _slaveFiles;
 	private ArrayList<String> _installedConfs;
 	private TreeSet<String> _missingLibs;
@@ -53,32 +61,37 @@ public class PluginBuildListener implements SubBuildListener {
 	private int _pluginsDone;
 	private boolean _cleanOnly;
 
-	public PluginBuildListener(PipedInputStream input, InstallerConfig config, ArrayList<PluginData> buildPlugins, PluginRegistry registry, LogWindowInterface logWindow, boolean cleanOnly) {
+	public PluginBuildListener(PipedInputStream input, InstallerConfig config, ArrayList<PluginWrapper> buildPlugins, PluginManager manager, LogWindowInterface logWindow, boolean cleanOnly) {
 		_input = input;
 		_logLevel = config.getLogLevel();
 		_config = config;
 		_logWindow = logWindow;
-		_pluginMap = new HashMap<>();
+		_pluginMap = new HashMap<String, PluginDescriptor>();
 		_cleanOnly = cleanOnly;
-		for (PluginData plugin : buildPlugins) {
-			_pluginMap.put(plugin.getName(),plugin.getDescriptor());
+    //logger.fatal(buildPlugins);
+		for (PluginWrapper plugin : buildPlugins) {
+			_pluginMap.put(plugin.getPluginId(), plugin.getDescriptor());
 		}
 		ArrayList<PluginDescriptor> initialPlugins = new ArrayList<>();
+    //logger.fatal(initialPlugins);
+    //logger.fatal(_pluginMap);
 		initialPlugins.add(_pluginMap.get("slave"));
-		for (PluginData plugin : buildPlugins) {
-			if (plugin.getName().equals("master")) {
+    //logger.fatal(initialPlugins);
+    //logger.fatal(_pluginMap);
+		for (PluginWrapper plugin : buildPlugins) {
+			if (plugin.getPluginId().equals("master")) {
 				continue;
 			}
-			if (PluginTools.isSlaveDepends(plugin.getDescriptor(), _pluginMap.get("slave"), _pluginMap.get("master"), registry)) {
+			if (PluginTools.isSlaveDepends(plugin.getDescriptor(), _pluginMap.get("slave"), _pluginMap.get("master"), manager)) {
 				initialPlugins.add(plugin.getDescriptor());
 			}
 		}
 		_slavePluginMap = new HashMap<>();
 		for (PluginDescriptor desc : initialPlugins) {
-			_slavePluginMap.put(desc.getId(), desc);
-			for (PluginData plugin : buildPlugins) {
-				if (PluginTools.isSlaveDepends(desc, plugin.getDescriptor(), _pluginMap.get("master"), registry)) {
-					_slavePluginMap.put(plugin.getName(),plugin.getDescriptor());
+			_slavePluginMap.put(desc.getPluginId(), desc);
+			for (PluginWrapper plugin : buildPlugins) {
+				if (PluginTools.isSlaveDepends(desc, plugin.getDescriptor(), _pluginMap.get("master"), manager)) {
+					_slavePluginMap.put(plugin.getPluginId(),plugin.getDescriptor());
 				}
 			}
 		}

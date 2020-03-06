@@ -27,9 +27,7 @@ import java.util.HashMap;
  */
 public class ConfigReader {
 
-	public ConfigReader() {
-		
-	}
+	public ConfigReader() {}
 
 	public InstallerConfig getConfig() {
 		XMLDecoder xd = null;
@@ -42,7 +40,7 @@ public class ConfigReader {
 			// Error loading config, let's use some defaults
 			config = new InstallerConfig();
 			config.setInstallDir(System.getProperty("user.dir"));
-			config.setLogLevel(1);
+			config.setLogLevel(4);
 			config.setFileLogging(false);
 			config.setClean(false);
 			config.setConvertUsers(false);

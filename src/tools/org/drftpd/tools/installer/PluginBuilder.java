@@ -27,14 +27,18 @@ import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.taskdefs.Ant.TargetElement;
 import org.apache.tools.ant.taskdefs.SubAnt;
 import org.apache.tools.ant.types.FileList;
-import org.java.plugin.registry.PluginRegistry;
+
+import org.pf4j.PluginManager;
+import org.pf4j.PluginWrapper;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PipedInputStream;
-import java.net.URISyntaxException;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import java.nio.file.Path;
 
 /**
  * @author djb61
@@ -48,25 +52,27 @@ public class PluginBuilder {
 	private Project _builderProject;
 	private boolean _cleanOnly;
 
-	public PluginBuilder(ArrayList<PluginData> toBuild, PluginRegistry registry, PipedInputStream logInput, InstallerConfig config, LogWindowInterface logWindow, boolean cleanOnly) {
+	public PluginBuilder(ArrayList<PluginWrapper> toBuild, PluginManager manager, PipedInputStream logInput, InstallerConfig config, LogWindowInterface logWindow, boolean cleanOnly) {
+
 		_cleanOnly = cleanOnly;
+
 		// Sort selected plugins into correct order for building
-		PluginTools.reorder(toBuild,registry);
+		// PluginTools.reorder(toBuild,manager); - TODO?
+
 		// Create a list of build files for the selected plugins
 		StringBuilder buildFiles = new StringBuilder();
-		Iterator<PluginData> iter = toBuild.iterator();
+
+		// Get iterator
+		Iterator<PluginWrapper> iter = toBuild.iterator();
 		while (iter.hasNext()) {
-			File pluginFile = null;
-			try {
-				pluginFile = new File(iter.next().getDescriptor().getLocation().toURI());
-				buildFiles.append(pluginFile.getParent().substring(System.getProperty("user.dir").length()+1)+File.separator+"build.xml");
-				if (iter.hasNext()) {
-					buildFiles.append(",");
-				}
-			} catch (URISyntaxException e) {
-				logger.warn("Error loading plugin buildfile",e);
+            Path pluginFile = iter.next().getPluginPath().normalize();
+			logger.debug("Plugin path: [" + pluginFile.resolve("build.xml").toUri() + "], working path: [" + System.getProperty("user.dir") + "]");
+			buildFiles.append(pluginFile.resolve("build.xml").toUri());
+			if (iter.hasNext()) {
+				buildFiles.append(",");
 			}
 		}
+		logger.debug("List of buildFiles: [" + buildFiles + "]");
 
 		// Set list of build files in the ant builder
 		FileList fileList = new FileList();
@@ -79,10 +85,11 @@ public class PluginBuilder {
 
 		// Read custom project wide config data and configure ant Project to use it
 		File setupFile = new File(System.getProperty("user.dir")+File.separator+"setup.xml");
-		ProjectHelper.configureProject(_builderProject,setupFile);
+		logger.debug("Setup file: [" + setupFile + "]");
+		ProjectHelper.configureProject(_builderProject, setupFile);
 
 		// Add a custom build listener for logging and handling our additional needs
-		_pbListener = new PluginBuildListener(logInput,config,toBuild,registry,logWindow,_cleanOnly);
+		_pbListener = new PluginBuildListener(logInput, config, toBuild, manager, logWindow, _cleanOnly);
 		try {
 			_pbListener.init();
 		} catch (IOException e) {
@@ -99,9 +106,9 @@ public class PluginBuilder {
 
 		// Set dev mode
 		if (config.getDevMode()) {
-			_builderProject.setProperty("devmode","true");
+			_builderProject.setProperty("devmode", "true");
 		} else {
-			_builderProject.setProperty("devmode","false");
+			_builderProject.setProperty("devmode", "false");
 		}
 
 		// Set target(s)
