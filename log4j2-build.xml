@@ -8,8 +8,12 @@
     </File>
   </Appenders>
   <Loggers>
-    <Root level="fatal">
+    <Root level="FATAL">
       <AppenderRef ref="root"/>
     </Root>
+    <Logger name="org.apache.tools.ant.Project" level="FATAL"/>
+    <Logger name="org.apache.tools.ant.Project" level="FATAL"/>
+    <Logger name="org.apache.tools.ant.taskdefs" level="FATAL"/>
+    <Logger name="org.apache.tools.ant.taskdefs.Echo" level="FATAL"/>
   </Loggers>
 </Configuration>

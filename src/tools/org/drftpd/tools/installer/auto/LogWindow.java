@@ -53,8 +53,11 @@ public class LogWindow implements LogWindowInterface {
 			_fileLog.init();
 		}
 		_logReader = new BufferedReader(new InputStreamReader(_logInput));
-		new Thread(new ReadingThread()).start();
-		new Thread(new PluginBuilderThread(_builder)).start();
+		new Thread(new ReadingThread(), "ReadingThread").start();
+    try {
+      Thread.sleep(1);
+    } catch(Exception e) {}
+		new Thread(new PluginBuilderThread(_builder), "PluginBuilderThread").start();
 	}
 
 	/**
@@ -81,19 +84,28 @@ public class LogWindow implements LogWindowInterface {
 	private class ReadingThread implements Runnable {
 
 		public void run() {
+      _defaultOut.println("Started");
 			try {
 				String logLine;
+        int errorCount = 0;
 				do {
 					logLine = _logReader.readLine();
 					if (logLine != null) {
+            if (errorCount >= 0) {
+              errorCount = 0;
+            }
 						if (_fileLogEnabled) {
 							_fileLog.writeLog(logLine);
 						}
-						if (!_suppressLog) {
+						//if (!_suppressLog) {
 							_defaultOut.println(logLine);
-						}
-					}
-				} while(logLine != null);
+						//}
+					} else
+          {
+            _defaultOut.println("["+errorCount+"] -> NULL Read");
+            errorCount++;
+          }
+				} while(errorCount <= 5);
 			} catch (Exception e) {
 				// Ignore
 			} finally {
@@ -112,6 +124,7 @@ public class LogWindow implements LogWindowInterface {
 					// already closed
 				}
 			}
+      _defaultOut.println("Finished");
 		}
 	}
 }

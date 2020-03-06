@@ -68,16 +68,16 @@ public class PluginBuildListener implements SubBuildListener {
 		_logWindow = logWindow;
 		_pluginMap = new HashMap<String, PluginDescriptor>();
 		_cleanOnly = cleanOnly;
-    //logger.fatal(buildPlugins);
+    logger.fatal("buildPlugins: ["+buildPlugins+"]");
 		for (PluginWrapper plugin : buildPlugins) {
 			_pluginMap.put(plugin.getPluginId(), plugin.getDescriptor());
 		}
 		ArrayList<PluginDescriptor> initialPlugins = new ArrayList<>();
-    //logger.fatal(initialPlugins);
-    //logger.fatal(_pluginMap);
+    logger.fatal("initialPlugins1: ["+initialPlugins+"]");
+    logger.fatal("pluginMap1: ["+_pluginMap+"]");
 		initialPlugins.add(_pluginMap.get("slave"));
-    //logger.fatal(initialPlugins);
-    //logger.fatal(_pluginMap);
+    logger.fatal("initialPlugins2: ["+initialPlugins+"]");
+    logger.fatal("pluginMap2: ["+_pluginMap+"]");
 		for (PluginWrapper plugin : buildPlugins) {
 			if (plugin.getPluginId().equals("master")) {
 				continue;
@@ -86,6 +86,8 @@ public class PluginBuildListener implements SubBuildListener {
 				initialPlugins.add(plugin.getDescriptor());
 			}
 		}
+    logger.fatal("initialPlugins3: ["+initialPlugins+"]");
+    logger.fatal("pluginMap3: ["+_pluginMap+"]");
 		_slavePluginMap = new HashMap<>();
 		for (PluginDescriptor desc : initialPlugins) {
 			_slavePluginMap.put(desc.getPluginId(), desc);
@@ -95,6 +97,9 @@ public class PluginBuildListener implements SubBuildListener {
 				}
 			}
 		}
+    logger.fatal("initialPlugins4: ["+initialPlugins+"]");
+    logger.fatal("pluginMap4: ["+_pluginMap+"]");
+    logger.fatal("slavePluginMap4: ["+_slavePluginMap+"]");
 		_slaveFiles = new FileSet();
 		_installedConfs = new ArrayList<>();
 		_missingLibs = new TreeSet<>();
@@ -113,6 +118,7 @@ public class PluginBuildListener implements SubBuildListener {
 	}
 
 	public void cleanup() {
+    writeLog("cleanup");
 		try {
 			System.setErr(_sysErrHold);
 			System.setOut(_sysOutHold);
@@ -133,6 +139,7 @@ public class PluginBuildListener implements SubBuildListener {
 	}
 
 	public void buildFinished(BuildEvent be) {
+    writeLog("buildFinished");
 		// Create slave.zip
 		Project pluginProject = be.getProject();
 		if (pluginProject != null && be.getException() == null && !_config.getDevMode() && !_cleanOnly) {
@@ -238,7 +245,7 @@ public class PluginBuildListener implements SubBuildListener {
 	}
 
 	public void messageLogged(BuildEvent be) {
-		if (be.getPriority() <= _logLevel) {
+		if (be.getPriority() <= _logLevel && true) {
 			String prefix = "";
 			Task task = be.getTask();
 			if (task != null) {
@@ -252,6 +259,7 @@ public class PluginBuildListener implements SubBuildListener {
 	}
 
 	public void subBuildFinished(BuildEvent be) {
+    writeLog("subBuildFinished");
 		// reset state
 		_isSlavePlugin = false;
 		_pluginsDone++;
@@ -259,6 +267,7 @@ public class PluginBuildListener implements SubBuildListener {
 	}
 
 	public void subBuildStarted(BuildEvent be) {
+    writeLog("subBuildStarted");
 		Project p = be.getProject();
 		if (p != null) {
 			String name = p.getName();
@@ -275,19 +284,19 @@ public class PluginBuildListener implements SubBuildListener {
 	}
 
 	public void targetFinished(BuildEvent be) {
-
+    writeLog("targetFinished");
 	}
 
 	public void targetStarted(BuildEvent be) {
-
+    writeLog("targetStarted");
 	}
 
 	public void taskFinished(BuildEvent be) {
-
+    writeLog("taskFinished");
 	}
 
 	public void taskStarted(BuildEvent be) {
-
+    writeLog("taskStarted");
 	}
 
 	private void writeLog(String message) {

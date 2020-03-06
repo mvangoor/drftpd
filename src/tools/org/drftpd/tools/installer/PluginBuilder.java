@@ -28,6 +28,9 @@ import org.apache.tools.ant.taskdefs.Ant.TargetElement;
 import org.apache.tools.ant.taskdefs.SubAnt;
 import org.apache.tools.ant.types.FileList;
 
+import org.pf4j.DefaultVersionManager;
+import org.pf4j.DependencyResolver;
+import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
 
@@ -37,6 +40,7 @@ import java.io.PipedInputStream;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import java.nio.file.Path;
 
@@ -57,22 +61,34 @@ public class PluginBuilder {
 		_cleanOnly = cleanOnly;
 
 		// Sort selected plugins into correct order for building
-		// PluginTools.reorder(toBuild,manager); - TODO?
+		List<PluginDescriptor> descriptors = new ArrayList<>();
+		for (PluginWrapper pw : toBuild) {
+			descriptors.add(pw.getDescriptor());
+		}
+		DependencyResolver dr = new DependencyResolver(new DefaultVersionManager ());
+		DependencyResolver.Result result = dr.resolve(descriptors);
+		List<String> sortedPlugins = result.getSortedPlugins();
 
 		// Create a list of build files for the selected plugins
 		StringBuilder buildFiles = new StringBuilder();
 
-		// Get iterator
-		Iterator<PluginWrapper> iter = toBuild.iterator();
-		while (iter.hasNext()) {
-            Path pluginFile = iter.next().getPluginPath().normalize();
-			logger.debug("Plugin path: [" + pluginFile.resolve("build.xml").toUri() + "], working path: [" + System.getProperty("user.dir") + "]");
-			buildFiles.append(pluginFile.resolve("build.xml").toUri());
-			if (iter.hasNext()) {
+		// Get the build.xml paths in order
+		for (String pluginId : sortedPlugins) {
+			PluginWrapper pw = null;
+			for (PluginWrapper pw2 : toBuild) {
+				if (pluginId.equals(pw2.getPluginId())) {
+					pw = pw2;
+					break;
+				}
+			}
+			if (buildFiles.length() != 0) {
 				buildFiles.append(",");
 			}
+			Path pluginFile = pw.getPluginPath().normalize();
+			logger.debug("Plugin path: [" + pluginFile.resolve("build.xml").toString() + "], working path: [" + System.getProperty("user.dir") + "]");
+			buildFiles.append(pluginFile.resolve("build.xml").toString());
 		}
-		logger.debug("List of buildFiles: [" + buildFiles + "]");
+		logger.debug("List of buildFiles: [" + buildFiles.toString() + "]");
 
 		// Set list of build files in the ant builder
 		FileList fileList = new FileList();
@@ -129,7 +145,9 @@ public class PluginBuilder {
 		// Final setup of ant builder
 		_antBuilder.setProject(_builderProject);
 		_antBuilder.setInheritall(true);
-		_antBuilder.setFailonerror(true);
+		_antBuilder.setFailonerror(false);
+		_antBuilder.setVerbose(true);
+    logger.fatal("buildPath: ["+_antBuilder.createBuildpath()+"]");
 	}
 
 	public void buildPlugins() {
@@ -142,10 +160,14 @@ public class PluginBuilder {
 				startEvent.setMessage("BUILD STARTED",0);
 			}
 			_pbListener.buildStarted(startEvent);
+      logger.fatal("pre execute");
 			_antBuilder.execute();
+      logger.fatal("post execute");
 		} catch (BuildException e) {
+      logger.fatal("Exception: ["+e+"]");
 			be = e;
 		} finally {
+      logger.fatal("Finally");
 			BuildEvent endEvent = new BuildEvent(_builderProject);
 			if (be != null) {
 				endEvent.setException(be);

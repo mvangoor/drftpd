@@ -59,6 +59,6 @@ public class BuildSystem {
     // Only auto installer currently, other options might follow in the future
     AutoInstaller installer = new AutoInstaller(pluginManager, config, false);
 
-    System.exit(0);
+    logger.info("Finished");
   }
 }
