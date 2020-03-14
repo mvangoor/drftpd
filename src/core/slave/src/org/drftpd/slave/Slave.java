@@ -29,19 +29,26 @@ import org.drftpd.io.PhysicalFile;
 import org.drftpd.master.QueuedOperation;
 import org.drftpd.protocol.slave.SlaveProtocolCentral;
 import org.drftpd.slave.async.*;
-import org.drftpd.slave.diskselection.DiskSelectionInterface;
-import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.slave.diskselection.DiskSelection;
 import org.drftpd.util.PortRange;
+
+import org.pf4j.Extension;
+import org.pf4j.drftpd.Application;
+import org.pf4j.drftpd.DrftpdPluginManager;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocket;
+
 import java.io.*;
+
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.CRC32;
@@ -52,7 +59,8 @@ import java.util.zip.CheckedInputStream;
  * @author zubov
  * @version $Id$
  */
-public class Slave {
+@Extension
+public class Slave implements Application {
 	public static final boolean isWin32 = System.getProperty("os.name").startsWith("Windows");
 
 	private static final Logger logger = LogManager.getLogger(Slave.class);
@@ -93,7 +101,7 @@ public class Slave {
 
 	private SlaveProtocolCentral _central;
 
-	private DiskSelectionInterface _diskSelection = null;
+	private DiskSelection _diskSelection = null;
 
 	private boolean _ignorePartialRemerge;
 
@@ -105,7 +113,9 @@ public class Slave {
 
 	private boolean _online;
 
-	protected Slave() {
+  private DrftpdPluginManager _manager;
+
+	public Slave() {
 	}
 
 	public Slave(Properties p) throws IOException, SSLUnavailableException {
@@ -281,15 +291,20 @@ public class Slave {
 	private void loadDiskSelection(Properties cfg) {
 		String desiredDs = PropertyHelper.getProperty(cfg, "diskselection");
 		try {
-			_diskSelection = CommonPluginUtils.getSinglePluginObject(this, "slave", "DiskSelection", "Class", desiredDs,
-					new Class[] { Slave.class }, new Object[] { this });
+			// OLD JPF -> _diskSelection = CommonPluginUtils.getSinglePluginObject(this, "slave", "DiskSelection", "Class", desiredDs, new Class[] { Slave.class }, new Object[] { this });
+      List<DiskSelection> ds = _manager.getExtensions(DiskSelection.class, desiredDs);
+      if (ds.size() != 1) {
+        throw new RuntimeException("found ["+ds.size()+"] plugins for ["+desiredDs+"]and only expected 1");
+      } else
+      {
+        _diskSelection = ds.get(0);
+      }
 		} catch (Exception e) {
-			throw new RuntimeException(
-					"Cannot create instance of diskselection, check 'diskselection' in the configuration file", e);
+			throw new RuntimeException("Cannot create instance of diskselection, check 'diskselection' in the configuration file", e);
 		}
 	}
 
-	public DiskSelectionInterface getDiskSelection() {
+	public DiskSelection getDiskSelection() {
 		return _diskSelection;
 	}
 
@@ -310,8 +325,12 @@ public class Slave {
 		return new RootCollection(this, roots);
 	}
 
-	public static void boot() throws Exception {
-		System.out.println("DrFTPD " + CommonPluginUtils.getPluginVersionForObject(Slave.class)
+  @Override
+  public void start(DrftpdPluginManager dpm) throws Exception {
+
+    _manager = dpm;
+
+		System.out.println("DrFTPD " + _manager.getPlugin("slave").getDescriptor().getVersion()
 				+ " Slave starting, further logging will be done through log4j");
 
 		Thread.currentThread().setName("Slave Main Thread");
@@ -339,6 +358,10 @@ public class Slave {
 			s.shutdown();
 		}
 	}
+
+  public DrftpdPluginManager getPluginManager() {
+    return _manager;
+  }
 
 	public void shutdown() {
 		if (_sin != null) {

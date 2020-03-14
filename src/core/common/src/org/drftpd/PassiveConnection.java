@@ -125,11 +125,14 @@ public class PassiveConnection extends Connection {
 		_serverSocket = null;
 	}
 
+/*
+// This is deprecated and should be handled by the class creating a PassiveConnection in the first place
 	protected void finalize() throws Throwable {
 		if (_serverSocket != null) {
             logger.debug("Closing extraneous ServerSocket - {}, accept() was never called on the ServerSocket", _serverSocket.getLocalPort());
 			_serverSocket.close();
 		}
 	}
+*/
 
 }

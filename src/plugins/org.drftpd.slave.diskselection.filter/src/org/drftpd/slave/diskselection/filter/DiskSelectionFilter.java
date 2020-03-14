@@ -31,7 +31,7 @@ import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.slave.Root;
 import org.drftpd.slave.RootCollection;
 import org.drftpd.slave.Slave;
-import org.drftpd.slave.diskselection.DiskSelectionInterface;
+import org.drftpd.slave.diskselection.DiskSelection;
 import org.drftpd.slave.diskselection.filter.ScoreChart.RootScore;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
@@ -44,7 +44,7 @@ import org.drftpd.util.PluginObjectContainer;
  * @author fr0w
  * @version $Id$
  */
-public class DiskSelectionFilter extends DiskSelectionInterface{
+public class DiskSelectionFilter implements DiskSelection {
 	private static final Class<?>[] SIG = new Class[] { DiskSelectionFilter.class, Properties.class, Integer.class };
 	private static final Logger logger = LogManager.getLogger(Slave.class);
 
@@ -52,11 +52,17 @@ public class DiskSelectionFilter extends DiskSelectionInterface{
 	private RootCollection _rootCollection;	
 	private CaseInsensitiveHashMap<String, Class<DiskFilter>> _filtersMap;
 
+  private Slave _slave;
+
 	public DiskSelectionFilter(Slave slave) throws IOException {
-		super(slave);
-		_rootCollection = slave.getRoots();
+		_slave = slave;
+		_rootCollection = _slave.getRoots();
 		readConf();
 	}
+
+  public Slave getSlaveObject() {
+    return _slave;
+  }
 
 	public RootCollection getRootCollection() {
 		return _rootCollection;

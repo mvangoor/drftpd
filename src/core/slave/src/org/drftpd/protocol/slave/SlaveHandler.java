@@ -19,36 +19,32 @@ package org.drftpd.protocol.slave;
 import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncResponse;
 
+import org.pf4j.ExtensionPoint;
+
 /**
- * All handlers *MUST* extend this class in order to be proper loaded and used.
+ * All handlers *MUST* implement this class in order to be proper loaded and used.
  * @author fr0w
  * @version $Id$
  */
-public abstract class AbstractHandler {
-	private SlaveProtocolCentral _central;
-	
-	public AbstractHandler(SlaveProtocolCentral central) {
-		_central = central;
-	}
+public interface SlaveHandler extends ExtensionPoint {
 	
 	/**
 	 * @return the slave-side protocol central.
 	 */
-	public SlaveProtocolCentral getCentral() {
-		return _central;
-	}
+	public SlaveProtocolCentral getCentral();
 	
 	/**
 	 * @return the Slave instance.
 	 */
-	public Slave getSlaveObject() {
-		return _central.getSlaveObject();
-	}
+	public Slave getSlaveObject();
 	
 	/**
 	 * {@link Slave.sendResponse(AsyncResponse ar)}
 	 */
-	public void sendResponse(AsyncResponse ar) {
-		getSlaveObject().sendResponse(ar);
-	}
+	public void sendResponse(AsyncResponse ar);
+
+	/**
+	 * @return the protocol the Slave Handler provides
+	 */
+  public String getProtocolName();
 }

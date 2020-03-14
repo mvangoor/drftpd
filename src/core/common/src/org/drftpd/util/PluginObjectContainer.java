@@ -17,7 +17,8 @@
  */
 package org.drftpd.util;
 
-import org.java.plugin.registry.Extension;
+//import org.java.plugin.registry.Extension;
+import org.pf4j.Extension;
 
 import java.lang.reflect.Method;
 

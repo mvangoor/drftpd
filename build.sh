@@ -111,6 +111,8 @@ rm -f lib/libTerminal.*
 ln -s $SOURCE lib/$TARGET
 
 ant -buildfile installer.xml build
+ant -buildfile common.xml build
+ant -buildfile slave.xml build
 LIBS=`echo ./lib/*.jar | tr ' ' ':'`
 # $JAVA_BIN -cp "$LIBS:$TOOLS_JAR" -Djava.library.path=lib -Dlog4j.configurationFile=log4j2-build.xml -Dincludes="src/*/plugin.xml,src/plugins/*/plugin.xml" org.drftpd.tools.installer.Wrapper "$@"
-$JAVA_BIN -cp "$LIBS" -Djava.library.path=lib -Dlog4j.configurationFile=log4j2-build-console.xml org.drftpd.tools.installer.BuildSystem "$@"
+# $JAVA_BIN -cp "$LIBS" -Djava.library.path=lib -Dlog4j.configurationFile=log4j2-build-console.xml org.drftpd.tools.installer.BuildSystem "$@"

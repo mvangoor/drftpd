@@ -25,7 +25,6 @@ import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseException;
-import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
 
 import java.io.IOException;
@@ -114,13 +113,16 @@ public class SlaveProtocolCentral {
 		HashMap<String, HandlerWrapper> handlers = new HashMap<>();
 		ArrayList<String> protocols = new ArrayList<>();
 
+    try {
+      List<SlaveHandler> sh = _slave.getPluginManager().getExtensions(SlaveHandler.class);
+    } catch (Exception e) {
+			logger.error("Failed to load plugins for slave extension point 'SlaveHandler', possibly the slave extension point definition has changed", e);
+    }
+/*
 		try {
-			List<PluginObjectContainer<AbstractHandler>> loadedHandlers =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "slave", "Handler", "Class", "Method",
-						CONSTRUCTORPARMS, new Object[] { this }, METHODPARMS);
+			List<PluginObjectContainer<AbstractHandler>> loadedHandlers = CommonPluginUtils.getPluginObjectsInContainer(this, "slave", "Handler", "Class", "Method", CONSTRUCTORPARMS, new Object[] { this }, METHODPARMS);
 			for (PluginObjectContainer<AbstractHandler> container : loadedHandlers) {
-				String protocolName = 
-					container.getPluginExtension().getDeclaringPluginDescriptor().getAttribute("ProtocolName").getValue();
+				String protocolName = container.getPluginExtension().getDeclaringPluginDescriptor().getAttribute("ProtocolName").getValue();
 				String name = container.getPluginExtension().getParameter("Name").valueAsString();
 				if (!protocols.contains(protocolName)) {
 					protocols.add(protocolName);
@@ -131,6 +133,7 @@ public class SlaveProtocolCentral {
 			logger.error("Failed to load plugins for slave extension point 'Handler', possibly the slave"
 					+" extension point definition has changed in the plugin.xml",e);
 		}
+*/
 		
 		_handlersMap = Collections.unmodifiableMap(handlers);
 		_protocols = Collections.unmodifiableList(protocols);

@@ -18,14 +18,22 @@
 package org.drftpd.tools.installer;
 
 import java.beans.XMLDecoder;
+
 import java.io.FileInputStream;
+
 import java.util.HashMap;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 /**
  * @author djb61
  * @version $Id$
  */
 public class ConfigReader {
+
+  private static final Logger logger = LogManager.getLogger(ConfigReader.class);
 
 	public ConfigReader() {}
 
@@ -37,6 +45,7 @@ public class ConfigReader {
 			config = (InstallerConfig) xd.readObject();
 			return config;
 		} catch (Exception e) {
+      logger.debug("Something is wrong with build.conf, creating an empty one");
 			// Error loading config, let's use some defaults
 			config = new InstallerConfig();
 			config.setInstallDir(System.getProperty("user.dir"));

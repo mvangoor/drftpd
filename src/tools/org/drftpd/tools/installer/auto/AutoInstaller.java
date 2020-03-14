@@ -42,11 +42,19 @@ public class AutoInstaller {
 
     HashMap<String,Boolean> pluginConfig = config.getPluginSelections();
 		for (PluginWrapper plugin : manager.getPlugins()) {
-      toBuild.add(plugin);
-			Boolean sel = pluginConfig.get(plugin.getDescriptor().getPluginId());
-			if (sel == null) {
-        pluginConfig.put(plugin.getDescriptor().getPluginId(), Boolean.TRUE);
-			}
+  		Boolean sel = pluginConfig.get(plugin.getDescriptor().getPluginId());
+      logger.fatal("["+plugin.getDescriptor().getPluginId()+" -> "+sel);
+      // If we want to build all plugins, this is build phase -- TODO: Remove this
+      if (false) {
+        toBuild.add(plugin);
+  			if (sel == null) {
+          pluginConfig.put(plugin.getDescriptor().getPluginId(), Boolean.TRUE);
+  			}
+      } else {
+        if (sel != null && sel) {
+          toBuild.add(plugin);
+        }
+      }
 		}
     config.setPluginSelections(pluginConfig);
     logger.debug("Current plugin configuration: [" + config.getPluginSelections() + "]");

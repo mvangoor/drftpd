@@ -15,6 +15,8 @@
  */
 package org.drftpd.tools.installer;
 
+import java.io.IOException;
+
 import java.util.List;
 import java.util.Set;
 
@@ -39,7 +41,7 @@ public class BuildSystem {
 
   private static final Logger logger = LogManager.getLogger(BuildSystem.class);
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
 
     // Load the build config
     ConfigReader cr = new ConfigReader();
@@ -59,6 +61,7 @@ public class BuildSystem {
     // Only auto installer currently, other options might follow in the future
     AutoInstaller installer = new AutoInstaller(pluginManager, config, false);
 
+    config.writeToDisk();
     logger.info("Finished");
   }
 }

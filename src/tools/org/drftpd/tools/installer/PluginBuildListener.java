@@ -75,7 +75,12 @@ public class PluginBuildListener implements SubBuildListener {
 		ArrayList<PluginDescriptor> initialPlugins = new ArrayList<>();
     logger.fatal("initialPlugins1: ["+initialPlugins+"]");
     logger.fatal("pluginMap1: ["+_pluginMap+"]");
-		initialPlugins.add(_pluginMap.get("slave"));
+    // Get the slave plugin (this is the start point for any slave)
+    PluginDescriptor slavePlugin = _pluginMap.get("slave");
+    // If we are not building the slave currently do not fuss about it
+    if (slavePlugin != null) {
+  		initialPlugins.add(_pluginMap.get("slave"));
+    }
     logger.fatal("initialPlugins2: ["+initialPlugins+"]");
     logger.fatal("pluginMap2: ["+_pluginMap+"]");
 		for (PluginWrapper plugin : buildPlugins) {
