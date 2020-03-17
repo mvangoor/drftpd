@@ -16,6 +16,7 @@
 package org.pf4j.drftpd;
 
 import org.pf4j.ExtensionPoint;
+import org.pf4j.PluginManager;
 
 /**
  * A boot class that start the demo.
@@ -23,5 +24,5 @@ import org.pf4j.ExtensionPoint;
  * @author mikevg
  */
 public interface Application extends ExtensionPoint {
-  void start(DrftpdPluginManager dpm) throws Exception;
+  void startApplication(PluginManager pm) throws Exception;
 }

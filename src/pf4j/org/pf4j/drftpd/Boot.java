@@ -43,7 +43,7 @@ public class Boot {
     pluginManager.startPlugins();
 
 /*
-TODO: Remove this (debugging)
+//TODO: Remove this (debugging)
     log.error("Extensions added by classpath:");
     Set<String> extensionClassNames = pluginManager.getExtensionClassNames(null);
     for (String extension : extensionClassNames) {
@@ -76,6 +76,6 @@ TODO: Remove this (debugging)
     if (apps.size() != 1) {
       throw new RuntimeException("I expect to only find one loaded plugin for Application Extension");
     }
-    apps.get(0).start(pluginManager);
+    apps.get(0).startApplication(pluginManager);
   }
 }

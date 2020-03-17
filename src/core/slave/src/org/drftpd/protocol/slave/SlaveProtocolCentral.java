@@ -164,11 +164,11 @@ public class SlaveProtocolCentral {
 		}
 		
 		Method m = wrapper.getMethod();
-		AbstractHandler ah = wrapper.getAsyncHandler();
+		SlaveHandler sh = wrapper.getAsyncHandler();
 		AsyncResponse ar = null;
 		
 		try {
-			ar = (AsyncResponse) m.invoke(ah, new Object[]{ ac });
+			ar = (AsyncResponse) m.invoke(sh, new Object[]{ ac });
 		} catch (Exception e) {
             logger.error("Unable to invoke: {}", m.toGenericString(), e);
             logger.error("Invokation failed due to: {}", m.toGenericString(), e.getCause());

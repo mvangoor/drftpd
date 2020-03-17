@@ -24,11 +24,11 @@ import java.lang.reflect.Method;
  * @version $Id$
  */
 public class HandlerWrapper {
-	private AbstractHandler _ah;
+	private SlaveHandler _sh;
 	private Method _method;
 	
-	public HandlerWrapper(AbstractHandler ah, Method method) {
-		_ah = ah;
+	public HandlerWrapper(SlaveHandler sh, Method method) {
+		_sh = sh;
 		_method = method;
 	}
 	
@@ -36,7 +36,7 @@ public class HandlerWrapper {
 		return _method;
 	}
 	
-	public AbstractHandler getAsyncHandler() {
-		return _ah;
+	public SlaveHandler getAsyncHandler() {
+		return _sh;
 	}
 }

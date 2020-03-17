@@ -33,8 +33,7 @@ import org.drftpd.slave.diskselection.DiskSelection;
 import org.drftpd.util.PortRange;
 
 import org.pf4j.Extension;
-import org.pf4j.drftpd.Application;
-import org.pf4j.drftpd.DrftpdPluginManager;
+import org.pf4j.PluginManager;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
@@ -59,8 +58,7 @@ import java.util.zip.CheckedInputStream;
  * @author zubov
  * @version $Id$
  */
-@Extension
-public class Slave implements Application {
+public class Slave {
 	public static final boolean isWin32 = System.getProperty("os.name").startsWith("Windows");
 
 	private static final Logger logger = LogManager.getLogger(Slave.class);
@@ -113,12 +111,13 @@ public class Slave implements Application {
 
 	private boolean _online;
 
-  private DrftpdPluginManager _manager;
+  private PluginManager _pluginManager;
 
 	public Slave() {
 	}
 
-	public Slave(Properties p) throws IOException, SSLUnavailableException {
+	public Slave(PluginManager pm, Properties p) throws IOException, SSLUnavailableException {
+    _pluginManager = pm;
 		InetSocketAddress addr = new InetSocketAddress(PropertyHelper.getProperty(p, "master.host"),
 				Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport")));
 
@@ -292,7 +291,7 @@ public class Slave implements Application {
 		String desiredDs = PropertyHelper.getProperty(cfg, "diskselection");
 		try {
 			// OLD JPF -> _diskSelection = CommonPluginUtils.getSinglePluginObject(this, "slave", "DiskSelection", "Class", desiredDs, new Class[] { Slave.class }, new Object[] { this });
-      List<DiskSelection> ds = _manager.getExtensions(DiskSelection.class, desiredDs);
+      List<DiskSelection> ds = this.getPluginManager().getExtensions(DiskSelection.class, desiredDs);
       if (ds.size() != 1) {
         throw new RuntimeException("found ["+ds.size()+"] plugins for ["+desiredDs+"]and only expected 1");
       } else
@@ -325,12 +324,9 @@ public class Slave implements Application {
 		return new RootCollection(this, roots);
 	}
 
-  @Override
-  public void start(DrftpdPluginManager dpm) throws Exception {
+  public static void boot(PluginManager pm) throws Exception {
 
-    _manager = dpm;
-
-		System.out.println("DrFTPD " + _manager.getPlugin("slave").getDescriptor().getVersion()
+		System.out.println("DrFTPD " + pm.getPlugin("slave").getDescriptor().getVersion()
 				+ " Slave starting, further logging will be done through log4j");
 
 		Thread.currentThread().setName("Slave Main Thread");
@@ -340,7 +336,7 @@ public class Slave implements Application {
 		p.load(fis);
 		fis.close();
 
-		Slave s = new Slave(p);
+		Slave s = new Slave(pm, p);
 		s.getProtocolCentral().handshakeWithMaster();
 
 		if (isWin32) {
@@ -359,8 +355,8 @@ public class Slave implements Application {
 		}
 	}
 
-  public DrftpdPluginManager getPluginManager() {
-    return _manager;
+  public PluginManager getPluginManager() {
+    return _pluginManager;
   }
 
 	public void shutdown() {
