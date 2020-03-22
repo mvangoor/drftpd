@@ -24,14 +24,19 @@ import org.bushe.swing.event.EventServiceExistsException;
 import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+
 import org.drftpd.commandmanager.CommandManagerInterface;
+
 import org.drftpd.config.ConfigManager;
+
 import org.drftpd.event.AsyncThreadSafeEventService;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.MessageEvent;
 import org.drftpd.event.UnloadPluginEvent;
+
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.exceptions.SlaveFileException;
+
 import org.drftpd.master.CommitManager;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
@@ -39,22 +44,30 @@ import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.master.config.PluginsConfig;
 import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.master.cron.TimeManager;
+
 import org.drftpd.sections.SectionManagerInterface;
+
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.MasterPluginUtils;
+
 import org.drftpd.util.PortRange;
+
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.index.IndexEngineInterface;
+
+import org.pf4j.PluginManager;
+
 import org.tanukisoftware.wrapper.WrapperManager;
 
 import javax.net.ssl.SSLContext;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+
 import java.util.*;
 
 /**
@@ -81,7 +94,7 @@ public class GlobalContext {
 
 	protected SlaveManager _slaveManager;
 
-	protected AbstractUserManager _usermanager;
+	protected AbstractUserManager _userManager;
 
 	private Timer _timer = new Timer("GlobalContextTimer");
 
@@ -97,7 +110,9 @@ public class GlobalContext {
 
 	private static AsyncThreadSafeEventService eventService = new AsyncThreadSafeEventService();
 
-	public static final String VERSION = "DrFTPD " + CommonPluginUtils.getPluginVersionForObject(GlobalContext.class);
+  private String _version;
+
+  private PluginManager _pluginManager;
 
 	public void reloadFtpConfig() {
 		_config.reload();
@@ -114,11 +129,26 @@ public class GlobalContext {
 	private void loadSlaveSelectionManager(Properties cfg) {
 		String desiredSL = PropertyHelper.getProperty(cfg, "slaveselection");
 		try {
-			_slaveSelectionManager = CommonPluginUtils.getSinglePluginObject(this, "master", "SlaveSelection", "Class", desiredSL);
+			// OLD JPF -> _slaveSelectionManager = CommonPluginUtils.getSinglePluginObject(this, "master", "SlaveSelection", "Class", desiredSL);
+      List<SlaveSelectionManagerInterface> ssm = this.getPluginManager().getExtensions(SlaveSelectionManagerInterface.class, desiredSL);
+      if (ssm.size() != 1) {
+        throw new RuntimeException("found ["+ssm.size()+"] extensions for ["+desiredSL+"] and only expected 1");
+      } else
+      {
+        _slaveSelectionManager = ssm.get(0);
+      }
 		} catch (Exception e) {
 			throw new FatalException("Unable to load the slaveselection plugin, check config.", e);
 		}
 	}
+
+  public PluginManager getPluginManager() {
+    return _pluginManager;
+  }
+
+  public String getVersion() {
+    return _version;
+  }
 
 	public PluginsConfig getPluginsConfig() {
 		return _pluginsConfig;
@@ -165,11 +195,11 @@ public class GlobalContext {
 	}
 
 	public UserManager getUserManager() {
-		if (_usermanager == null) {
+		if (_userManager == null) {
 			throw new NullPointerException();
 		}
 
-		return _usermanager;
+		return _userManager;
 	}
 
 	public boolean isShutdown() {
@@ -179,14 +209,19 @@ public class GlobalContext {
 	public CommandManagerInterface getCommandManager() {
 		Properties cfg = GlobalContext.getConfig().getMainProperties();
 
+    CommandManagerInterface ret = null;
 		String desiredCm = PropertyHelper.getProperty(cfg, "commandmanager");
 		try {
-			return CommonPluginUtils.getSinglePluginObject(this, "master", "CommandManager", "Class", desiredCm);
+			// OLD JPF -> return CommonPluginUtils.getSinglePluginObject(this, "master", "CommandManager", "Class", desiredCm);
+      List<CommandManagerInterface> cm = this.getPluginManager().getExtensions(CommandManagerInterface.class, desiredCm);
+      if (cm.size() != 1) {
+        throw new RuntimeException("found ["+cm.size()+"] extensions for ["+desiredCm+"] and only expected 1");
+      }
+      ret = cm.get(0);
 		} catch (Exception e) {
-			throw new FatalException(
-					"Cannot create instance of commandmanager, check 'commandmanager' in the configuration file",
-					e);
+			throw new FatalException("Cannot create instance of commandmanager, check 'commandmanager' in the configuration file", e);
 		}
+    return ret;
 	}
 
 	private void loadPlugins() {
@@ -197,15 +232,19 @@ public class GlobalContext {
 				_plugins.add(newPlugin);
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for master extension point 'Plugin', possibly the master extension " +
-					"point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for master extension point 'Plugin', possibly the master extension point definition has changed in the plugin.xml", e);
 		}
 	}
 
 	private void loadSectionManager(Properties cfg) {
 		String desiredSm = PropertyHelper.getProperty(cfg, "sectionmanager");
 		try {
-			_sectionManager = CommonPluginUtils.getSinglePluginObject(this, "master", "SectionManager", "Class", desiredSm);
+			// OLD JPF -> _sectionManager = CommonPluginUtils.getSinglePluginObject(this, "master", "SectionManager", "Class", desiredSm);
+      List<SectionManagerInterface> sm = this.getPluginManager().getExtensions(SectionManagerInterface.class, desiredSm);
+      if (sm.size() != 1) {
+        throw new RuntimeException("found ["+sm.size()+"] extensions for ["+desiredSm+"] and only expected 1");
+      }
+      _sectionManager = sm.get(0);
 		} catch (Exception e) {
 			throw new FatalException("Cannot create instance of SectionManager, check 'sectionmanager' in config file", e);
 		}
@@ -214,7 +253,12 @@ public class GlobalContext {
 	private void loadIndexingEngine(Properties cfg) {
 		String desiredIe = PropertyHelper.getProperty(cfg, "indexingengine");
 		try {
-			_indexEngine = CommonPluginUtils.getSinglePluginObject(this, "master", "IndexingEngine", "Class", desiredIe);
+			// OLD JPF -> _indexEngine = CommonPluginUtils.getSinglePluginObject(this, "master", "IndexingEngine", "Class", desiredIe);
+      List<IndexEngineInterface> ie = this.getPluginManager().getExtensions(IndexEngineInterface.class, desiredIe);
+      if (ie.size() != 1) {
+        throw new RuntimeException("found ["+ie.size()+"] extensions for ["+desiredIe+"] and only expected 1");
+      }
+      _indexEngine = ie.get(0);
 			_indexEngine.init();
 		} catch (Exception e) {
 			throw new FatalException("Cannot create instance of IndexingEngine, check 'indexingengine' in config file", e);
@@ -237,12 +281,15 @@ public class GlobalContext {
 	protected void loadUserManager(Properties cfg) {
 		String desiredUm = PropertyHelper.getProperty(cfg, "usermanager");
 		try {
-			_usermanager = CommonPluginUtils.getSinglePluginObject(this, "master", "UserManager", "Class", desiredUm);
-			_usermanager.init();
+			// OLD JPF -> _userManager = CommonPluginUtils.getSinglePluginObject(this, "master", "UserManager", "Class", desiredUm);
+      List<AbstractUserManager> um = this.getPluginManager().getExtensions(AbstractUserManager.class, desiredUm);
+      if (um.size() != 1) {
+        throw new RuntimeException("found ["+um.size()+"] extensions for ["+desiredUm+"] and only expected 1");
+      }
+      _userManager = um.get(0);
+			_userManager.init();
 		} catch (Exception e) {
-			throw new FatalException(
-					"Cannot create instance of usermanager, check 'usermanager' in the configuration file",
-					e);
+			throw new FatalException("Cannot create instance of usermanager, check 'usermanager' in the configuration file", e);
 		}
 	}
 
@@ -326,7 +373,9 @@ public class GlobalContext {
 		return root;
 	}
 
-	public void init() {
+	public void init(PluginManager pm) {
+    _pluginManager = pm;
+    _version = "DrFTPD " + getPluginManager().getPlugin("master").getDescriptor().getVersion();
 		_config = new ConfigManager();
 		_config.reload();
 
@@ -462,7 +511,7 @@ public class GlobalContext {
 				PluginInterface plugin = iter.next();
 				if (unloadedExtensions.contains(plugin)) {
 					plugin.stopPlugin("Plugin being unloaded");
-                    logger.debug("Unloading plugin {}", CommonPluginUtils.getPluginIdForObject(plugin));
+          logger.debug("Unloading plugin {}", CommonPluginUtils.getPluginIdForObject(plugin));
 					iter.remove();
 					pluginRemoved = true;
 				}
@@ -481,7 +530,7 @@ public class GlobalContext {
 				ArrayList<PluginInterface> clonedPlugins = new ArrayList<>(_plugins);
 				for (PluginInterface newExtension : loadedExtensions) {
 					newExtension.startPlugin();
-                    logger.debug("Loading plugin {}", CommonPluginUtils.getPluginIdForObject(newExtension));
+          logger.debug("Loading plugin {}", CommonPluginUtils.getPluginIdForObject(newExtension));
 					clonedPlugins.add(newExtension);
 				}
 				_plugins = clonedPlugins;

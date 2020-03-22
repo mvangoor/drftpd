@@ -99,7 +99,7 @@ public class Slave {
 
 	private SlaveProtocolCentral _central;
 
-	private DiskSelection _diskSelection = null;
+  private DiskSelection _diskSelection = null;
 
 	private boolean _ignorePartialRemerge;
 
@@ -271,7 +271,7 @@ public class Slave {
 
 		_concurrentRootIteration = p.getProperty("concurrent.root.iteration", "false").equalsIgnoreCase("true");
 		_roots = getDefaultRootBasket(p);
-		loadDiskSelection(p);
+    loadDiskSelection(p);
 
 		_transfers = new ConcurrentHashMap<>();
 
@@ -287,20 +287,18 @@ public class Slave {
 		_threadedRemerge = p.getProperty("threadedremerge", "false").equalsIgnoreCase("true");
 	}
 
-	private void loadDiskSelection(Properties cfg) {
+  private void loadDiskSelection(Properties cfg) {
 		String desiredDs = PropertyHelper.getProperty(cfg, "diskselection");
 		try {
 			// OLD JPF -> _diskSelection = CommonPluginUtils.getSinglePluginObject(this, "slave", "DiskSelection", "Class", desiredDs, new Class[] { Slave.class }, new Object[] { this });
       List<DiskSelection> ds = this.getPluginManager().getExtensions(DiskSelection.class, desiredDs);
       if (ds.size() != 1) {
-        throw new RuntimeException("found ["+ds.size()+"] plugins for ["+desiredDs+"]and only expected 1");
-      } else
-      {
-        _diskSelection = ds.get(0);
+        throw new RuntimeException("found ["+ds.size()+"] plugins for ["+desiredDs+"] and only expected 1");
       }
-		} catch (Exception e) {
-			throw new RuntimeException("Cannot create instance of diskselection, check 'diskselection' in the configuration file", e);
-		}
+      _diskSelection = ds.get(0);
+    } catch (Exception e) {
+      throw new RuntimeException("Cannot create instance of diskselection, check 'diskselection' in the configuration file", e);
+    }
 	}
 
 	public DiskSelection getDiskSelection() {

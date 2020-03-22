@@ -22,12 +22,15 @@ import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.PathPermission;
+
 import org.drftpd.usermanager.User;
-import org.drftpd.util.CommonPluginUtils;
+
 import org.drftpd.util.PluginObjectContainer;
+
 import org.drftpd.vfs.InodeHandle;
 
 import java.util.*;
+
 import java.util.Map.Entry;
 
 /**

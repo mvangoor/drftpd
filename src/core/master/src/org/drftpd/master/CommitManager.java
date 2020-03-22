@@ -23,12 +23,14 @@ import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-import org.drftpd.util.CommonPluginUtils;
 
 import java.io.IOException;
+
 import java.util.Iterator;
 import java.util.Properties;
+
 import java.util.concurrent.ConcurrentLinkedQueue;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**

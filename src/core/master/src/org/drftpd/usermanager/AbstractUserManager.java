@@ -21,20 +21,26 @@ import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+
 import org.drftpd.GlobalContext;
+
 import org.drftpd.commands.UserManagement;
+
 import org.drftpd.dynamicdata.KeyNotFoundException;
+
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
+
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.exceptions.FileExistsException;
+
 import org.drftpd.io.PermissionDeniedException;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.MasterPluginUtils;
 
 import java.io.File;
 import java.io.IOException;
+
 import java.lang.ref.SoftReference;
+
 import java.util.*;
 
 /**
@@ -416,15 +422,14 @@ public abstract class AbstractUserManager implements UserManager {
 				for (UserResetHookInterface preResetHook : loadedPreResetHooks) {
 					preResetHook.init();
 					clonedPreResetHooks.add(preResetHook);
-                    logger.debug("Loading PreUserResetHook into UserManager from plugin {}", CommonPluginUtils.getPluginIdForObject(preResetHook));
+          logger.debug("Loading PreUserResetHook into UserManager from plugin {}", CommonPluginUtils.getPluginIdForObject(preResetHook));
 				}
 				_preResetHooks = clonedPreResetHooks;
 			}
 		} catch (IllegalArgumentException e) {
 			logger.error(
 					"Failed to load plugins from a loadplugin event for master extension point 'PreUserResetHook', possibly the "
-							+ "master extension point definition has changed in the plugin.xml",
-					e);
+							+ "master extension point definition has changed in the plugin.xml", e);
 		}
 
 		// Load any new post reset hooks provided by the plugin being loaded
@@ -443,8 +448,7 @@ public abstract class AbstractUserManager implements UserManager {
 		} catch (IllegalArgumentException e) {
 			logger.error(
 					"Failed to load plugins from a loadplugin event for master extension point 'PostUserResetHook', possibly the "
-							+ "master extension point definition has changed in the plugin.xml",
-					e);
+							+ "master extension point definition has changed in the plugin.xml", e);
 		}
 	}
 }

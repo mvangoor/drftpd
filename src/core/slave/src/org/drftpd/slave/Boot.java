@@ -19,8 +19,6 @@ package org.drftpd.slave;
 
 import org.pf4j.drftpd.Application;
 
-import org.drftpd.slave.Slave;
-
 import org.pf4j.Extension;
 import org.pf4j.PluginManager;
 

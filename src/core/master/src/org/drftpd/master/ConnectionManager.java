@@ -22,20 +22,30 @@ import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
+
 import org.drftpd.commandmanager.CommandManagerInterface;
+
 import org.drftpd.commands.UserManagement;
+
 import org.drftpd.event.ReloadEvent;
+
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
+
+import org.pf4j.PluginManager;
+
 import org.tanukisoftware.wrapper.WrapperManager;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -83,8 +93,8 @@ public class ConnectionManager {
 		return _bindIP;
 	}
 
-	public static void boot() {
-		System.out.println(GlobalContext.VERSION + " Master starting.");
+	public static void boot(PluginManager pm) {
+		System.out.println(GlobalContext.getVersion() + " Master starting.");
 		System.out.println("https://github.com/drftpd-ng/drftpd3");
 		System.out.println("Further logging will be done using (mostly) log4j, check logs/");
 		// Set current thread name to make it clear in logfiles what is coming from the main master process 
@@ -94,7 +104,7 @@ public class ConnectionManager {
 		try {
 			logger.info("Starting ConnectionManager");
 
-			GlobalContext.getGlobalContext().init();
+			GlobalContext.getGlobalContext().init(pm);
 
 			getConnectionManager().loadCommands();
 			Properties cfg = GlobalContext.getConfig().getMainProperties();

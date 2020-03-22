@@ -5,9 +5,17 @@ import org.drftpd.slave.Slave;
 
 import org.pf4j.ExtensionPoint;
 
-public interface DiskSelection extends ExtensionPoint {
+public abstract class DiskSelection implements ExtensionPoint {
+
+  private Slave _slave;
+
+  public DiskSelection(Slave slave) {
+    _slave = slave;
+  }
 	
-	public Slave getSlaveObject();
+	public Slave getSlaveObject() {
+    return _slave;
+  }
 	
 	public abstract Root getBestRoot(String dir);
 }

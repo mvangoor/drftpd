@@ -21,21 +21,30 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
+
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
+
 import org.drftpd.master.config.ConfigInterface;
+
 import org.drftpd.permissions.PathPermission;
 import org.drftpd.permissions.Permission;
+
 import org.drftpd.usermanager.User;
-import org.drftpd.util.CommonPluginUtils;
+
 import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.util.PortRange;
+
 import org.drftpd.vfs.DirectoryHandle;
+
 import org.drftpd.vfs.perms.VFSPermissions;
 
 import javax.net.ssl.SSLContext;
+
 import java.io.*;
+
 import java.net.InetAddress;
+
 import java.util.*;
 
 /**
@@ -65,7 +74,7 @@ public class ConfigManager implements ConfigInterface {
     private VFSPermissions _vfsPerms;
 
     private ArrayList<InetAddress> _bouncerIps;
-    private String _loginPrompt = GlobalContext.VERSION + " https://github.com/drftpd-ng/drftpd3";
+    private String _loginPrompt = GlobalContext.getVersion() + " https://github.com/drftpd-ng/drftpd3";
     private String _allowConnectionsDenyReason = "";
     private String _pasvAddr = null;
     private PortRange _portRange = new PortRange(0);

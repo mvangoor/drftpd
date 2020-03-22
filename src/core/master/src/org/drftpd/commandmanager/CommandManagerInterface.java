@@ -18,8 +18,12 @@
 package org.drftpd.commandmanager;
 
 import org.drftpd.master.Session;
+
 import org.drftpd.util.ExtendedPropertyResourceBundle;
+
 import org.drftpd.vfs.DirectoryHandle;
+
+import org.pf4j.ExtensionPoint;
 
 import java.util.HashMap;
 import java.util.Properties;
@@ -28,7 +32,7 @@ import java.util.Properties;
  * @author djb61
  * @version $Id$
  */
-public interface CommandManagerInterface {
+public interface CommandManagerInterface extends ExtensionPoint {
 
 	/**
 	 * Initialization routine.
@@ -36,12 +40,12 @@ public interface CommandManagerInterface {
 	 * @param themeDir the location relative to drftpd root path of the theme files for the calling frontend
 	 * @see <code>org.drftpd.master.config.FtpConfig.getFtpCommandsMap()</code> for more information about the Map.
 	 */
-    void initialize(HashMap<String, Properties> requiredCmds, String themeDir);
+  void initialize(HashMap<String, Properties> requiredCmds, String themeDir);
 
 	/**
 	 * Executes the command. 
 	 */
-    CommandResponseInterface execute(CommandRequestInterface request);
+  CommandResponseInterface execute(CommandRequestInterface request);
 
 	/**
 	 * To explain how this constructor works take this "CWD /PHOTOS/" as the request
@@ -53,8 +57,7 @@ public interface CommandManagerInterface {
 	 * @param session, the Session object provided by the frontend for storing data.
 	 * @param config, the Properties object containing details and setting for the command sent.
 	 */
-    CommandRequestInterface newRequest(String originalCommand, String argument,
-                                       DirectoryHandle directory, String user, Session session, Properties config);
+  CommandRequestInterface newRequest(String originalCommand, String argument, DirectoryHandle directory, String user, Session session, Properties config);
 
-	ExtendedPropertyResourceBundle getResourceBundle();
+  ExtendedPropertyResourceBundle getResourceBundle();
 }

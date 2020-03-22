@@ -17,8 +17,10 @@
  */
 package org.drftpd.event;
 
+/*
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
+*/
 
 import java.util.ArrayList;
 
@@ -33,13 +35,15 @@ public class PluginEvent {
 	private String _plugin;
 
 	public PluginEvent(String pluginName) {
-		_parentPlugins = new ArrayList<>();
-		for (Extension parent : PluginManager.lookup(this).getRegistry()
-			.getPluginDescriptor(pluginName).getExtensions()) {
-			_parentPlugins.add(parent.getExtendedPluginId()+"@"+
-					parent.getExtendedPointId());
-		}
 		_plugin = pluginName;
+
+		_parentPlugins = new ArrayList<>();
+/*
+TODO: fix this - MVG
+		for (Extension parent : PluginManager.lookup(this).getRegistry().getPluginDescriptor(pluginName).getExtensions()) {
+			_parentPlugins.add(parent.getExtendedPluginId()+"@"+parent.getExtendedPointId());
+		}
+*/
 	}
 
 	public ArrayList<String> getParentPlugins() {

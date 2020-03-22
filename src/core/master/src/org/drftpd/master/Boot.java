@@ -17,27 +17,23 @@
  */
 package org.drftpd.master;
 
-import org.java.plugin.boot.Application;
-import org.java.plugin.boot.ApplicationPlugin;
-import org.java.plugin.util.ExtendedProperties;
+import org.pf4j.drftpd.Application;
+
+import org.pf4j.Extension;
+import org.pf4j.PluginManager;
 
 /**
- * @author djb61
+ * @author mvangoor
  * @version $Id$
  */
-public class Boot extends ApplicationPlugin implements Application {
+@Extension
+public class Boot implements Application {
 
-	protected void doStart() throws Exception {
-		// no-op
-	}
+  @Override
+  public void startApplication(PluginManager pm) throws Exception {
 
-	protected void doStop() throws Exception {
-		// no-op
-	}
-	protected Application initApplication(final ExtendedProperties config, String[] args) throws Exception {
-		return this;
-	}
-	public void startApplication() throws Exception {
-		ConnectionManager.boot();
-	}
+		ConnectionManager.boot(pm);
+
+  }
+
 }

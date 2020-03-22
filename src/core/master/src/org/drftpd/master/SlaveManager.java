@@ -18,28 +18,37 @@
 package org.drftpd.master;
 
 import com.cedarsoftware.util.io.JsonReader;
+
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
+
 import org.drftpd.exceptions.*;
+
 import org.drftpd.master.cron.TimeEventInterface;
+
 import org.drftpd.protocol.master.AbstractBasicIssuer;
 import org.drftpd.protocol.master.AbstractIssuer;
 import org.drftpd.protocol.master.MasterProtocolCentral;
+
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
-import org.drftpd.util.CommonPluginUtils;
+
 import org.drftpd.vfs.DirectoryHandle;
 
 import javax.net.ssl.SSLSocket;
+
 import java.beans.XMLDecoder;
+
 import java.io.*;
+
 import java.net.ServerSocket;
 import java.net.Socket;
+
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,16 +58,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version $Id$
  */
 public class SlaveManager implements Runnable, TimeEventInterface {
-	private static final Logger logger = LogManager.getLogger(SlaveManager.class
-			.getName());
+	private static final Logger logger = LogManager.getLogger(SlaveManager.class.getName());
 
 	private static final String slavePath = "userdata/slaves/";
 
 	private static final int socketTimeout = 10000; // 10 seconds, for Socket
 
-	protected static final int actualTimeout = 60000; // one minute, evaluated
-														// on a SocketTimeout
-	
+	protected static final int actualTimeout = 60000; // one minute, evaluated on a SocketTimeout
 	
 	private static AbstractBasicIssuer _basicIssuer = null;
 	
@@ -72,11 +78,9 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	
 	private MasterProtocolCentral _central;
 
-    private boolean _listForSlaves = true;
+  private boolean _listForSlaves = true;
 
-	public SlaveManager() {
-		
-	}
+	public SlaveManager() {}
 	
 	public SlaveManager(Properties p) throws SlaveFileException {
 		_sslSlaves = p.getProperty("master.slaveSSL", "false").equalsIgnoreCase("true");
@@ -149,14 +153,14 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		}
 	}
 
-	private RemoteSlave getSlaveByXMLNameUnchecked(String slavename)
-			throws ObjectNotFoundException {
+	private RemoteSlave getSlaveByXMLNameUnchecked(String slavename) throws ObjectNotFoundException {
 		RemoteSlave rslave;
 		File xmlSlaveFile = getXMLSlaveFile(slavename);
 		try (XMLDecoder in = new XMLDecoder(new BufferedInputStream(new FileInputStream(xmlSlaveFile)))) {
-            logger.debug("Loading slave '{}' XML data from disk.", slavename);
+      logger.debug("Loading slave '{}' XML data from disk.", slavename);
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
-			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
+			// OLD JPF -> Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
+      Thread.currentThread().setContextClassLoader(getGlobalContext().getPluginManager().getPluginClassLoader(getGlobalContext().getPluginManager().whichPlugin(this.getClass()).getPluginId()));
 			rslave = (RemoteSlave) in.readObject();
 			Thread.currentThread().setContextClassLoader(prevCL);
 
@@ -165,7 +169,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 				// Commit new json slave file and delete old xml
 				rslave.commit();
 				if (!xmlSlaveFile.delete()) {
-                    logger.error("Failed to delete old xml slave file: {}", xmlSlaveFile.getName());
+          logger.error("Failed to delete old xml slave file: {}", xmlSlaveFile.getName());
 				}
 				return rslave;
 			}

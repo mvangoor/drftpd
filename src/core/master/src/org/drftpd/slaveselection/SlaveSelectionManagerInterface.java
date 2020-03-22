@@ -18,15 +18,21 @@
 package org.drftpd.slaveselection;
 
 import org.drftpd.GlobalContext;
+
 import org.drftpd.exceptions.NoAvailableSlaveException;
+
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
+
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 
+import org.pf4j.ExtensionPoint;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
 import java.util.Collection;
 
 /**
@@ -34,17 +40,15 @@ import java.util.Collection;
  * @version $Id: SlaveSelectionManagerInterface.java 1443 2006-03-18 00:57:58Z
  *          zubov $
  */
-public abstract class SlaveSelectionManagerInterface {
+public abstract class SlaveSelectionManagerInterface implements ExtensionPoint {
+
 	public abstract void reload() throws IOException;
 
-	public abstract RemoteSlave getASlave(BaseFtpConnection conn, char direction, InodeHandle file)
-			throws NoAvailableSlaveException;
+	public abstract RemoteSlave getASlave(BaseFtpConnection conn, char direction, InodeHandle file) throws NoAvailableSlaveException;
 
-	public abstract RemoteSlave getASlaveForJobDownload(FileHandle file, Collection<RemoteSlave> destinationSlaves)
-			throws NoAvailableSlaveException, FileNotFoundException;
+	public abstract RemoteSlave getASlaveForJobDownload(FileHandle file, Collection<RemoteSlave> destinationSlaves) throws NoAvailableSlaveException, FileNotFoundException;
 
-	public abstract RemoteSlave getASlaveForJobUpload(FileHandle file, Collection<RemoteSlave> destinationSlaves, RemoteSlave sourceSlave)
-			throws NoAvailableSlaveException, FileNotFoundException;
+	public abstract RemoteSlave getASlaveForJobUpload(FileHandle file, Collection<RemoteSlave> destinationSlaves, RemoteSlave sourceSlave) throws NoAvailableSlaveException, FileNotFoundException;
 	
 	public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
 		return getSlaveManager().getAvailableSlaves();

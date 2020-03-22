@@ -19,38 +19,36 @@ package org.drftpd.usermanager;
 
 import org.drftpd.master.cron.TimeEventInterface;
 
+import org.pf4j.ExtensionPoint;
+
 import java.util.Collection;
 
 /**
  * @author mog
  * @version $Id$
  */
-public interface UserManager extends TimeEventInterface {
-	void init() throws UserFileException;
+public interface UserManager extends TimeEventInterface, ExtensionPoint {
+  void init() throws UserFileException;
 	
-	User create(String username) throws UserFileException;
+  User create(String username) throws UserFileException;
 
-	Collection<String> getAllGroups();
+  Collection<String> getAllGroups();
 
 	/**
 	 * Get all user names in the system.
 	 */
-    Collection<User> getAllUsers();
+  Collection<User> getAllUsers();
 
-	Collection<User> getAllUsersByGroup(String group);
+  Collection<User> getAllUsersByGroup(String group);
 
 	/**
 	 * Get user by name.
 	 */
-    User getUserByName(String username)
-			throws NoSuchUserException, UserFileException;
+  User getUserByName(String username) throws NoSuchUserException, UserFileException;
 
-	User getUserByIdent(String ident, String botName)
-			throws NoSuchUserException;
+	User getUserByIdent(String ident, String botName) throws NoSuchUserException;
 
-	User getUserByNameUnchecked(String username)
-			throws NoSuchUserException, UserFileException;
+	User getUserByNameUnchecked(String username) throws NoSuchUserException, UserFileException;
 
-	User getUserByNameIncludeDeleted(String argument)
-			throws NoSuchUserException, UserFileException;
+	User getUserByNameIncludeDeleted(String argument) throws NoSuchUserException, UserFileException;
 }

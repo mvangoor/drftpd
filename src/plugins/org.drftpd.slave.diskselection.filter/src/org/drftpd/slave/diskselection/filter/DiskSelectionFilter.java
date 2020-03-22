@@ -52,17 +52,11 @@ public class DiskSelectionFilter implements DiskSelection {
 	private RootCollection _rootCollection;	
 	private CaseInsensitiveHashMap<String, Class<DiskFilter>> _filtersMap;
 
-  private Slave _slave;
-
 	public DiskSelectionFilter(Slave slave) throws IOException {
-		_slave = slave;
-		_rootCollection = _slave.getRoots();
+    super(slave);
+		_rootCollection = getSlaveObject().getRoots();
 		readConf();
 	}
-
-  public Slave getSlaveObject() {
-    return _slave;
-  }
 
 	public RootCollection getRootCollection() {
 		return _rootCollection;
