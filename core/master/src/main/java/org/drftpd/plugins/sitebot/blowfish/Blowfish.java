@@ -15,6 +15,10 @@
 */
 package org.drftpd.plugins.sitebot.blowfish;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.drftpd.plugins.sitebot.OutputWriter;
+
 import javax.crypto.*;
 import javax.crypto.spec.*;
 
@@ -24,6 +28,8 @@ import javax.crypto.spec.*;
  * @author k2r
  */
 public abstract class Blowfish {
+
+    protected static final Logger logger = LogManager.getLogger(Blowfish.class);
 
     /**
      * Crypto cipher

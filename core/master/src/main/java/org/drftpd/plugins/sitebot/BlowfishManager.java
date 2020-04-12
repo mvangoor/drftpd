@@ -24,17 +24,12 @@ class BlowfishManager {
 	/*
      * Constructor of BlowfishManager class Key param
 	 */
-
     BlowfishManager(String key, String mode) {
-        switch (mode.toLowerCase()) {
-            case CBC:
-                blowfish = new BlowfishCBC(key);
-                break;
-            case ECB:
-                blowfish = new BlowfishECB(key);
-                break;
-            default:
-                blowfish = new BlowfishECB(key);
+        if (CBC.equals(mode.toLowerCase())) {
+            blowfish = new BlowfishCBC(key);
+        } else {
+            // We default to ECB
+            blowfish = new BlowfishECB(key);
         }
     }
 

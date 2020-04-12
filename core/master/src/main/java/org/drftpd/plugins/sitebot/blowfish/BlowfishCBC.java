@@ -14,6 +14,7 @@ import javax.crypto.*;
 import javax.crypto.spec.*;
 
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
 
 /**
@@ -63,6 +64,7 @@ public class BlowfishCBC extends Blowfish {
             textToDecrypt = textToDecrypt.substring(CBC_PREFIX.length(), textToDecrypt.length());
         } else {
             //Not correct encrypted string, return the source string
+            logger.debug("Decryption failed");
             return textToDecrypt;
         }
 
@@ -91,7 +93,9 @@ public class BlowfishCBC extends Blowfish {
     public String encrypt(String rawString) throws Exception {
         //1- Correct the padding
         byte[] rawStringBytes = rawString.getBytes();
+        logger.debug("[BlowfishCBC::encrypt] pre padding: [" + Arrays.toString(rawStringBytes) + "]");
         byte[] lToDecrypt = rawStringBytes.length % 8 != 0 ? correctPadding(rawStringBytes) : rawStringBytes;
+        logger.debug("[BlowfishCBC::encrypt] post padding: [" + Arrays.toString(lToDecrypt) + "]");
 
         //2- Load the vector (IV) in front of the string
         byte[] lFinalToDecrypt = new byte[lToDecrypt.length + 8];

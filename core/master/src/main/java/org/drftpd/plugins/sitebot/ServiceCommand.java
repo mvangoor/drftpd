@@ -17,6 +17,8 @@
  */
 package org.drftpd.plugins.sitebot;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.master.Session;
 import org.drftpd.master.usermanager.User;
@@ -31,6 +33,8 @@ import java.util.StringTokenizer;
  */
 @SuppressWarnings("serial")
 public class ServiceCommand extends Session {
+
+	private static final Logger logger = LogManager.getLogger(ServiceCommand.class);
 
 	public static final Key<String> IDENT = new Key<>(ServiceCommand.class, "ident");
 
@@ -53,20 +57,27 @@ public class ServiceCommand extends Session {
 			setObject(SOURCE, source);
 		}
 		_runningUser = runningUser;
+		logger.debug("[ServiceCommand::" + _bot.getBotName() + "::" + _runningUser.toString() + "] Initialized with [" + outputs.size() + "] outputs");
 	}
 
+	@Override
 	public void printOutput(Object o) {
 		sendOutput(o);
 	}
 
+	// The code is ignored as it only makes sense for ftp commands
+	@Override
 	public void printOutput(int code, Object o) {
 		sendOutput(o);
 	}
 
 	private void sendOutput(Object o) {
+		logger.debug("[ServiceCommand::sendOutput] String: [" + o.toString() + "]");
 		StringTokenizer st = new StringTokenizer(o.toString(),"\n");
+		logger.debug("[ServiceCommand::sendOutput] Tokens: [" + st.countTokens() + "]");
 		while (st.hasMoreTokens()) {
 			String token = st.nextToken();
+			logger.debug("[ServiceCommand::sendOutput] Token [" + token + "]");
 			for (OutputWriter output : _outputs) {
 				output.sendMessage(token);
 			}

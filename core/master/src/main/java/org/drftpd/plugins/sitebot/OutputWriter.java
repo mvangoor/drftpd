@@ -19,12 +19,16 @@ package org.drftpd.plugins.sitebot;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author djb61
  * @version $Id$
  */
 public class OutputWriter {
+
+	private static final Logger logger = LogManager.getLogger(OutputWriter.class);
 
 	private static final String LINESEP = System.getProperty("line.separator");
 
@@ -48,10 +52,13 @@ public class OutputWriter {
 		_cipher = cipher;
 		_blowfishEnabled = _bot.getConfig().getBlowfishEnabled();
 		_maxOutputLen = getMaxLineLength();
+		logger.debug("[OutputWriter::" + _bot.getBotName() + "::" +_output + "] Initialized, blowfish: [" + _blowfishEnabled + "]");
 	}
 
 	public void sendMessage(String message) {
-		for (String line : splitLines(message)) {
+		String[] lines = splitLines(message);
+		logger.debug("[OutputWriter::sendMessage] lines count: [" + lines.length + "]");
+		for (String line : lines) {
 			if (_blowfishEnabled) {
 				// Check if we have a valid cipher before proceeding, this is to cover
 				// the case where the OutputWriter is for a private message to a user
