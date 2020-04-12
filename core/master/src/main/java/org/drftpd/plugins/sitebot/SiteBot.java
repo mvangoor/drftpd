@@ -496,7 +496,9 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param message The message to send.
      */
     public final void sendMessage(String target, String message) {
-        _outQueue.add("PRIVMSG " + target + " :" + message);
+        String msg = "PRIVMSG " + target + " :" + message;
+        logger.debug("[RAW OUTPUT]: "+msg);
+        _outQueue.add(msg);
     }
 
     /**

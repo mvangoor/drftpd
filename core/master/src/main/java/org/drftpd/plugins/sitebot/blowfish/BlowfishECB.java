@@ -61,7 +61,7 @@ public class BlowfishECB extends Blowfish {
         for (int i = encryptSize; i < encryptSize + Limit; i++) {
             buff[i] = 0x0;
         }
-        logger.debug("[BlowfishECB::encrypt] pre padding: [" + Arrays.toString(buff) + "]");
+        logger.debug("[BlowfishECB::encrypt] post padding: [" + Arrays.toString(buff) + "]");
 
         // Mode cypher in encrypt mode
         getCipher().init(Cipher.ENCRYPT_MODE, getSecretKeySpec());
@@ -72,7 +72,7 @@ public class BlowfishECB extends Blowfish {
         // B64 custom encryption
         logger.debug("[BlowfishECB::encrypt] pre B64: [" + Arrays.toString(encrypted) + "]");
         String REncrypt = byteToB64(encrypted);
-        logger.debug("[BlowfishECB::encrypt] pre B64: [" + REncrypt + "]");
+        logger.debug("[BlowfishECB::encrypt] post B64: [" + REncrypt + "]");
         REncrypt = ECB_STANDARD_PREFIX.concat(REncrypt);
         logger.debug("[BlowfishECB::encrypt] final: [" + REncrypt + "]");
         return REncrypt;
