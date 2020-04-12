@@ -15,6 +15,7 @@ package org.drftpd.plugins.sitebot.blowfish;
 
 import javax.crypto.*;
 import java.io.*;
+import java.util.Arrays;
 
 /**
  * Blowfish ECB
@@ -49,24 +50,31 @@ public class BlowfishECB extends Blowfish {
     }
 
     public String encrypt(String textToEncrypt) throws Exception {
-        // Mode cypher in encrypt mode
-        getCipher().init(Cipher.ENCRYPT_MODE, getSecretKeySpec());
 
         byte[] BEncrypt = textToEncrypt.getBytes();
         int encryptSize = BEncrypt.length;
         int Limit = 8 - (BEncrypt.length % 8);
         byte[] buff = new byte[encryptSize + Limit];
 
+        logger.debug("[BlowfishECB::encrypt] pre padding: [" + Arrays.toString(BEncrypt) + "]");
         System.arraycopy(BEncrypt, 0, buff, 0, encryptSize);
         for (int i = encryptSize; i < encryptSize + Limit; i++) {
             buff[i] = 0x0;
         }
+        logger.debug("[BlowfishECB::encrypt] pre padding: [" + Arrays.toString(buff) + "]");
+
+        // Mode cypher in encrypt mode
+        getCipher().init(Cipher.ENCRYPT_MODE, getSecretKeySpec());
 
         // encrypt the padding string
         byte[] encrypted = getCipher().doFinal(buff);
+
         // B64 custom encryption
+        logger.debug("[BlowfishECB::encrypt] pre B64: [" + Arrays.toString(encrypted) + "]");
         String REncrypt = byteToB64(encrypted);
+        logger.debug("[BlowfishECB::encrypt] pre B64: [" + REncrypt + "]");
         REncrypt = ECB_STANDARD_PREFIX.concat(REncrypt);
+        logger.debug("[BlowfishECB::encrypt] final: [" + REncrypt + "]");
         return REncrypt;
     }
 
