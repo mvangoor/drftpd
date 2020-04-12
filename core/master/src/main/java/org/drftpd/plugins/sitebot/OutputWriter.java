@@ -55,7 +55,7 @@ public class OutputWriter {
 		logger.debug("[OutputWriter::" + _bot.getBotName() + "::" +_output + "] Initialized, blowfish: [" + _blowfishEnabled + "]");
 	}
 
-	public void sendMessage(String message) {
+	public synchronized void sendMessage(String message) {
 		String[] lines = splitLines(message);
 		logger.debug("[OutputWriter::sendMessage] lines count: [" + lines.length + "]");
 		for (String line : lines) {
