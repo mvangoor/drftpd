@@ -765,7 +765,6 @@ public class SiteBot implements ReplyConstants, Runnable {
                 sourceLogin = senderInfo.substring(exclamation + 1, at);
                 sourceHostname = senderInfo.substring(at + 1);
             } else {
-
                 if (tokenizer.hasMoreTokens()) {
                     String token = command;
 
@@ -791,7 +790,6 @@ public class SiteBot implements ReplyConstants, Runnable {
                     // Return from the method;
                     return;
                 }
-
             }
         }
 
@@ -945,12 +943,12 @@ public class SiteBot implements ReplyConstants, Runnable {
         for (ChannelConfig chan : _config.getChannels()) {
             BlowfishManager cipher = null;
             if (_config.getBlowfishEnabled()) {
-                String chanKey = chan.getBlowKey();
-                if (chanKey == null || chanKey.equals("")) {
-                    logger.error("BlowfishManager is enabled but no BlowfishManager key is set for channel {} ,the bot will not join this channel", chan.getName());
+                String blowkey = chan.getBlowKey();
+                if (blowkey == null || blowkey.equals("")) {
+                    logger.error("BlowfishManager is enabled but no BlowfishManager key is set for channel " + chan.getName() + ",the bot will not join this channel");
                     break;
                 }
-                cipher = new BlowfishManager(chan.getBlowKey(), chan.getBlowMode());
+                cipher = new BlowfishManager(blowkey, chan.getBlowMode());
                 _ciphers.put(chan.getName(), cipher);
             }
             _writers.put(chan.getName(), new OutputWriter(this, chan.getName(), cipher));
@@ -1005,7 +1003,6 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param response The full response from the IRC server.
      */
     private void processServerResponse(int code, String response) {
-
         if (code == RPL_LIST) {
             // This is a bit of information about a channel.
             int firstSpace = response.indexOf(' ');
@@ -2621,17 +2618,23 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     private void handleCommand(String channel, String sender, String ident, String message, boolean isPublic) {
+        logger.debug("[SiteBot::handleCommand] channel: [" + channel + "], sender: [" + sender + "], ident: [" + ident + "], message: [" + message + "], isPublic: [" + isPublic + "]");
         // Create a request object for accessing the command and arguments
         IrcRequest request = new IrcRequest(message.substring(_config.getCommandTrigger().length()));
 
-        // Retrieve valid inputs for this command to check if we should act upon it
-        boolean proceed = false;
+        // Find the command
         Properties cmd = _cmds.get(request.getCommand());
+
         // Check if we know of this command, if not just return
         if (cmd == null) {
             logger.debug("Found line starting with correct command trigger " + _config.getCommandTrigger() + ", but no matching command found");
             return;
         }
+
+        // This will guard if the command request is valid
+        boolean proceed = false;
+
+        // Retrieve valid inputs for this command to check if we should act upon it
         String inputs = cmd.getProperty("input", "");
         StringTokenizer ist = new StringTokenizer(inputs);
         while (ist.hasMoreTokens()) {
@@ -2651,49 +2654,54 @@ public class SiteBot implements ReplyConstants, Runnable {
                 break;
             }
         }
+
+        // Stop if we have not found a valid input source for the command
         if (!proceed) {
             logger.debug("No valid input combination found for command " + request.getCommand());
-        } else {
-            // Find what outputs we should be sending the response to
-            ArrayList<OutputWriter> cmdOutputs = new ArrayList<>();
-            String outputs = cmd.getProperty("output", "");
-            StringTokenizer ost = new StringTokenizer(outputs);
-            while (ost.hasMoreTokens()) {
-                String token = ost.nextToken();
-                if (token.equalsIgnoreCase("public")) {
-                    cmdOutputs.addAll(_writers.values());
-                } else if (token.equalsIgnoreCase("private")) {
+            return;
+        }
+
+        // Find what outputs we should be sending the response to
+        ArrayList<OutputWriter> cmdOutputs = new ArrayList<>();
+        String outputs = cmd.getProperty("output", "");
+        StringTokenizer ost = new StringTokenizer(outputs);
+        while (ost.hasMoreTokens()) {
+            String token = ost.nextToken();
+            if (token.equalsIgnoreCase("public")) {
+                cmdOutputs.addAll(_writers.values());
+            } else if (token.equalsIgnoreCase("private")) {
+                cmdOutputs.add(getUserDetails(sender, ident).getOutputWriter());
+            } else if (token.equalsIgnoreCase("source")) {
+                if (isPublic) {
+                    cmdOutputs.add(_writers.get(channel));
+                } else {
                     cmdOutputs.add(getUserDetails(sender, ident).getOutputWriter());
-                } else if (token.equalsIgnoreCase("source")) {
-                    if (isPublic) {
-                        cmdOutputs.add(_writers.get(channel));
-                    } else {
-                        cmdOutputs.add(getUserDetails(sender, ident).getOutputWriter());
-                    }
-                } else if (token.startsWith("#")) {
-                    if (_writers.containsKey(token)) {
-                        cmdOutputs.add(_writers.get(token));
-                    }
+                }
+            } else if (token.startsWith("#")) {
+                if (_writers.containsKey(token)) {
+                    cmdOutputs.add(_writers.get(token));
                 }
             }
-            // Check if we found valid outputs and if so proceed
-            if (cmdOutputs.isEmpty()) {
-                logger.debug("No valid output combination found for command " + request.getCommand());
+        }
+
+        // Check if we found valid outputs and if so proceed
+        if (cmdOutputs.isEmpty()) {
+            logger.debug("No valid output combination found for command " + request.getCommand());
+            return;
+        }
+
+        ServiceCommand service = getUserDetails(sender, ident).getCommandSession(cmdOutputs, channel);
+        service.setCommands(_cmds);
+        try {
+            _pool.execute(new CommandThread(request, service, sender, ident));
+        } catch (RejectedExecutionException e) {
+            OutputWriter rejectWriter;
+            if (isPublic) {
+                rejectWriter = _writers.get(channel);
             } else {
-                ServiceCommand service = getUserDetails(sender, ident).getCommandSession(cmdOutputs, channel);
-                service.setCommands(_cmds);
-                try {
-                    _pool.execute(new CommandThread(request, service, sender, ident));
-                } catch (RejectedExecutionException e) {
-                    OutputWriter rejectWriter;
-                    if (isPublic) {
-                        rejectWriter = _writers.get(channel);
-                    } else {
-                        rejectWriter = getUserDetails(sender, ident).getOutputWriter();
-                    }
-                    rejectWriter.sendMessage("All command threads are busy, please wait and try again later");
-                }
+                rejectWriter = getUserDetails(sender, ident).getOutputWriter();
             }
+            rejectWriter.sendMessage("All command threads are busy, please wait and try again later");
         }
     }
 
@@ -2962,6 +2970,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         }
 
         public void run() {
+            logger.debug("[CommandThread::run] Thread started for " + _request.getCommand());
             UserDetails user = getUserDetails(_nickname, _ident);
             CommandRequestInterface cmdRequest = _commandManager.newRequest(_request.getCommand(), _request.getArgument(), new DirectoryHandle("/"), user.getFtpUser(), _service, _cmds.get(_request.getCommand()));
             CommandResponseInterface cmdResponse = _commandManager.execute(cmdRequest);

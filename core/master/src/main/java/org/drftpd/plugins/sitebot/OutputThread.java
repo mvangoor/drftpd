@@ -20,7 +20,6 @@ package org.drftpd.plugins.sitebot;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-
 import java.io.BufferedWriter;
 
 /**
@@ -49,7 +48,6 @@ public class OutputThread extends Thread {
 		this.setName(bot.getBotName() + "-OutputThread");
 	}
 
-
 	/**
 	 * A static method to write a line to a BufferedOutputStream and then pass
 	 * the line to the log method of the supplied SiteBot instance.
@@ -73,7 +71,6 @@ public class OutputThread extends Thread {
 		}
 	}
 
-
 	/**
 	 * This method starts the Thread consuming from the outgoing message
 	 * Queue and sending lines to the server.
@@ -90,8 +87,7 @@ public class OutputThread extends Thread {
 				String line = _outQueue.next();
 				if (line != null) {
 					_bot.sendRawLine(line);
-				}
-				else {
+				} else {
 					logger.debug("Got null line");
 					running = false;
 				}

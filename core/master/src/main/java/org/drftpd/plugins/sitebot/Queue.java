@@ -53,7 +53,6 @@ public class Queue {
 	 * @return The next item from the front of the queue.
 	 */
 	public String next() {
-
 		String next = null;
 		try {
 			next = _queue.take();

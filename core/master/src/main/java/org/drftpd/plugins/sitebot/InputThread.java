@@ -20,7 +20,6 @@ package org.drftpd.plugins.sitebot;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-
 import java.io.*;
 import java.net.Socket;
 import java.util.StringTokenizer;
@@ -57,7 +56,6 @@ public class InputThread extends Thread {
 		this.setName(bot.getBotName() + "-InputThread");
 	}
 
-
 	/**
 	 * Sends a raw line to the IRC server as soon as possible, bypassing the
 	 * outgoing message queue.
@@ -67,7 +65,6 @@ public class InputThread extends Thread {
 	void sendRawLine(String line) {
 		OutputThread.sendRawLine(_bot, _bwriter, line);
 	}
-
 
 	/**
 	 * Returns true if this InputThread is connected to an IRC server.
@@ -79,7 +76,6 @@ public class InputThread extends Thread {
 	boolean isConnected() {
 		return _isConnected;
 	}
-
 
 	/**
 	 * Called to start this Thread reading lines from the IRC server.
@@ -128,6 +124,7 @@ public class InputThread extends Thread {
 					// So we shall send it a ping to check that we are still connected.
 					this.sendRawLine("PING " + (System.currentTimeMillis() / 1000));
 					// Now we go back to listening for stuff from the server...
+					// TODO: Maybe we should have a check if we have hit this exception for ~5 times... it would mean the server does not respond to PING
 				}
 			}
 		}
@@ -150,7 +147,6 @@ public class InputThread extends Thread {
 		}
 
 	}
-
 
 	/**
 	 * Closes the socket without onDisconnect being called subsequently.
